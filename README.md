@@ -1,0 +1,1 @@
+This is a simple to-do app to understand how SWE works.
