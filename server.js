@@ -1,7 +1,8 @@
 const port = 3000
 const express = require('express');
+const cors = require('cors');
 const app = express()
-
+app.use(cors());
 //.json middleware
 app.use(express.json());
 
@@ -45,14 +46,14 @@ app.get('/todos',verifyToken,async(req,res)=>{
 
 app.post('/todos',verifyToken,async(req,res)=>{
     //POST A NEW TODO
-    const {title} = req.body;
+    const {title,completed} = req.body;
     const username = req.user.username;
     if(!title){
         console.error("Title is required");
         return res.status(400).json({error: "Title is required"});
     }
     try{
-            const newTodo = await db.one('INSERT INTO todos (title,completed,user_id) VALUES ($1,$2,$3) RETURNING *',[title,false,username])
+            const newTodo = await db.one('INSERT INTO todos (title,completed,user_id) VALUES ($1,$2,$3) RETURNING *',[title,completed,username])
             res.status(201).json(newTodo);
         }
         catch(error){
@@ -158,7 +159,6 @@ app.post('/login',async (req,res)=>{
         res.status(500).json({error:'Could not login'})
     }
 })
-
 
 app.listen(port,()=>{
     console.log(`Listening on port ${port}`)
