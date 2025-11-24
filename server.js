@@ -1,18 +1,22 @@
-const port = 3000
+require('dotenv').config();
+
+const port = process.env.PORT||3000;
 const express = require('express');
 const cors = require('cors');
 const app = express()
 app.use(cors());
-//.json middleware
 app.use(express.json());
 
 const pgp = require('pg-promise')()
-const connectionString = 'postgres://postgres:postgres@localhost:5432/mydb';
+const connectionString = process.env.DB_CONNECTION_STRING;
 const db = pgp(connectionString)
 
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
 
+//Environment Variables are always strings
+const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
+
+const secret_code = process.env.JWT_SECRET;
 const jwt = require('jsonwebtoken');
 const {errors} = require('pg-promise');
 
@@ -23,7 +27,7 @@ const verifyToken = (req,res,next)=>{
     }
     try{
         const headertoken = authHeader.split(' ')[1];
-        const decoded = jwt.verify(headertoken,'shhhhh')
+        const decoded = jwt.verify(headertoken,secret_code)//
         req.user = decoded;
         next();
     }
@@ -69,7 +73,7 @@ app.delete('/todos/:deleteId',verifyToken,async (req,res)=>{
     try{
         const deleteTodo = await db.oneOrNone('DELETE FROM todos WHERE id = $1 AND user_id = $2 RETURNING *',[id,username]);
         if(deleteTodo)
-            res.status(204).send();
+            res.status(200).json({message:"Todo Deleted"});
         else
             res.status(404).json({error:"Todo with id not found"});
     }
@@ -147,7 +151,7 @@ app.post('/login',async (req,res)=>{
             if(match){
                 //login
                 console.log('Password is Correct. Logging in!')
-                const token = jwt.sign({username:username},'shhhhh',{expiresIn:'1h'})
+                const token = jwt.sign({username:username},secret_code,{expiresIn:'1h'})//
                 return res.status(200).json({message:'Login Successful',token: token});
             }
             else{

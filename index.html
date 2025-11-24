@@ -3,6 +3,7 @@
     <head>
         <meta charset = "utf-8"/>
         <title>Aarush's Todo App</title>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
         <h1>Welcome to my Todo App!</h1>
@@ -19,6 +20,10 @@
             </p>
             <button type="button" name="Sign Up button" onclick="signup()">Sign Up</button>
             </form>
+            <div id="signupAlertContainer">
+
+            </div>
+            
         </fieldset>
         <fieldset id= "LoginFieldset">
             <form id = "loginForm" >
@@ -32,22 +37,21 @@
             </p>
             <button type="button" name="Login in button" onclick="login()">Login</button>
             </form>
+            <div id= "loginAlertContainer">
+
+            </div>
+        </fieldset>
+        <fieldset id="yourTodosContainer">
+                <h2><strong>Your Todos</strong></h2>
+                <div id="todosContainer">
+                
+                </div>
         </fieldset>
         <fieldset id = "TodoActionsFieldset">
             <!--
                 1. Must only be visible after login
             --> 
             <h2>Your Todo Actions</h2>
-            <fieldset>
-                <h2><strong>Get your Todos</strong></h2>
-                
-                <button type="button" id="getTodos" name="getTodosButton" onclick="getTodos()" >GET YOUR TODOS!</button>
-                <br>
-                <div id="todosContainer">
-                
-                </div>
-            </fieldset>
-            
             <fieldset>
                 <h2><strong>Add a new Todo</strong></h2>
                 <label for = "addTodoTitleInput">Enter Title(required)</label>
@@ -61,7 +65,7 @@
                 <br>
                 <button type="button" id="addTodosButton" name="addTodoButton" onclick="addTodos()">ADD TODO</button>
                 <br>
-                <div id="newTodoContainer">
+                <div id="addTodoContainer">
 
                 </div>
             </fieldset>
@@ -92,6 +96,9 @@
                 <input type="number" id="deleteTodoIdInput" required></input>
                 <br>
                 <button type="button" name="deleteTodoButton" onclick="deleteTodo()">Delete Todo</button>
+                <div id = 'deleteTodoAlertContainer'>
+
+                </div>
             </fieldset>
             <br>
             <div id="LogoutContainer">
@@ -100,155 +107,5 @@
 
         </fieldset>
     </body>
-    <script>
-        /*
-        1. Add HTTP validation (response.ok)
-        2. Display on the screen instead of console.
-        3. Alerts wherever needed
-        */
-        const TodoActionsContainer = document.getElementById('TodoActionsFieldset');
-        const LoginContainer = document.getElementById('LoginFieldset');
-        const SignUpContainer = document.getElementById('SignUpFieldset');
-        try{
-            const token = localStorage.getItem('authToken')
-            if(!token){
-                TodoActionsContainer.style.display = 'none';
-                LoginContainer.style.display = 'block';
-                SignUpContainer.style.display = 'block';
-            }
-            else{
-                TodoActionsContainer.style.display = 'block';
-                LoginContainer.style.display = 'none';
-                SignUpContainer.style.display = 'none';
-            }
-        }
-        catch(error){
-            console.log(error);
-        }
-        /*Add Validation to all of these*/
-        async function signup(){
-            console.log("SignUp function is called");
-            const username = document.getElementById('signup_username').value;
-            const password = document.getElementById('signup_password').value;
-            const response = await fetch('http://localhost:3000/signup',{
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({username,password})
-            });
-            const data = await response.json();
-            console.log("Data was received");
-            console.log(data);
-        }
-        async function login(){
-            //display whether password is correct or not
-            const username = document.getElementById('login_username').value;
-            const password = document.getElementById('login_password').value;
-            const response = await fetch('http://localhost:3000/login',{
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({username,password})
-            });
-            const data = await response.json();
-            if(data.token){
-                console.log(`${data.message}`);
-                localStorage.setItem('authToken',data.token);
-                window.location.reload();
-            }
-            else{
-                console.log(data.error);
-            }
-        }
-        async function logout(){
-            localStorage.removeItem('authToken');
-            window.location.reload();
-        }
-        async function getTodos(){
-            const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:3000/todos',{
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization':'Bearer '+token
-                }
-            });
-            const data = await response.json();
-
-            const container = document.getElementById('todosContainer');
-            container.innerHTML = '';
-            if(data.length===0){
-                container.innerHTML ='<p>No Todos yet!</p>';
-                return;
-            }
-
-            const heading = document.createElement('h3');
-            heading.textContent = 'Your Todos:';
-            container.appendChild(heading);
-            data.forEach(function(todo) {
-                const p = document.createElement('p');
-                p.textContent=`Id: ${todo.id} Title: ${todo.title} Completion Status: ${todo.completed}`;
-                container.appendChild(p);
-            });
-        }
-        async function addTodos(){
-            const title = document.getElementById('addTodoTitleInput').value;
-            const completed = document.getElementById('addTodoCompletion').value == 'true';
-            const token = localStorage.getItem('authToken');
-            const response = await fetch('http://localhost:3000/todos',{
-                method: 'POST',
-                headers:{
-                    'Content-Type':'application/json',
-                    'Authorization':'Bearer '+token,
-                },
-                body:JSON.stringify({title, completed})  // completed is now boolean
-            });
-            const data = await response.json();
-
-            const container = document.getElementById('newTodoContainer');
-            container.innerHTML="";
-            const heading = document.createElement('h3')
-            heading.textContent = 'New Todo Created!' //can be an alert instead
-            container.appendChild(heading);
-
-            const p = document.createElement('p');
-            p.textContent = `Added new todo: ID:${data.id} Title:${data.title} Completion Status:${data.completed}`;
-            container.appendChild(p);
-        }
-        async function updateTodos(){
-            const token = localStorage.getItem('authToken'); 
-            const id = document.getElementById('updateTodoID').value;
-            const title = document.getElementById('updateTodoTitleInput').value;
-            const completed = document.getElementById('updateTodoCompletion').value == 'true';
-            const response = await fetch(`http://localhost:3000/todos/${id}`,{
-                method:'PUT',
-                body: JSON.stringify({title,completed}),
-                headers:{
-                    'Content-Type':'application/json',
-                    'Authorization':'Bearer '+token
-                }
-            });
-            const data = await response.json();
-            console.log(data);
-
-            const container = document.getElementById('updateTodoContainer');
-            container.innerHTML="";
-            const heading = document.createElement('h3')
-            heading.textContent = 'Todo Updated!' //can be an alert instead
-            container.appendChild(heading);
-
-            const p = document.createElement('p');
-            p.textContent = `Updated todo at ID:${data.id} :- Title:${data.title} Completion Status:${data.completed}`;
-            container.appendChild(p);
-        }
-        async function deleteTodo(){
-            const token = localStorage.getItem('authToken')
-            const id = document.getElementById('deleteTodoIdInput').value;
-            const response = await fetch(`http://localhost:3000/todos/${id}`,{
-                method:'DELETE',
-                headers:{
-                    'Content-Type':'application/json',
-                    'Authorization':'Bearer '+token
-                }
-            });
-        }
-    </script>
+    <script src="app.js"></script>
 </html>
