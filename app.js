@@ -4,7 +4,6 @@ const API = {
     getToken(){
         return localStorage.getItem('authToken');
     },
-    //const id = document.getElementById('deleteTodoIdInput').value;
 
     async request(endpoint,options={}){
         const token = this.getToken();
@@ -68,25 +67,26 @@ const yourTodosContainer = document.getElementById('yourTodosContainer');
 const TodoActionsContainer = document.getElementById('TodoActionsFieldset');
 const LoginContainer = document.getElementById('LoginFieldset');
 const SignUpContainer = document.getElementById('SignUpFieldset');
-    try{
-        const token = localStorage.getItem('authToken')
-        if(!token){
-            yourTodosContainer.style.display = 'none';
-            TodoActionsContainer.style.display = 'none';
-            LoginContainer.style.display = 'block';
-            SignUpContainer.style.display = 'block';
-        }
-        else{
-            yourTodosContainer.style.display = 'block';
-            TodoActionsContainer.style.display = 'block';
-            LoginContainer.style.display = 'none';
-            SignUpContainer.style.display = 'none';
-            getTodos();
-        }
+
+try{
+    const token = localStorage.getItem('authToken')
+    if(!token){
+        yourTodosContainer.style.display = 'none';
+        TodoActionsContainer.style.display = 'none';
+        LoginContainer.style.display = 'block';
+        SignUpContainer.style.display = 'block';
     }
-    catch(error){
+    else{
+        yourTodosContainer.style.display = 'block';
+        TodoActionsContainer.style.display = 'block';
+        LoginContainer.style.display = 'none';
+        SignUpContainer.style.display = 'none';
+        getTodos();
+        }
+}
+catch(error){
         console.log(error);
-    }
+}
 
 function displayError(data,containerID){
     const container = document.getElementById(containerID);
