@@ -1,5 +1,5 @@
 const API = {
-    BASE_URL:'http://localhost:3000',
+    BASE_URL:'https://todo-app-brev.onrender.com',
 
     getToken(){
         return localStorage.getItem('authToken');
